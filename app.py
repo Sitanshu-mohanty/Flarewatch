@@ -1,36 +1,63 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# Page settings
-st.set_page_config(page_title="Flarewatch Dashboard", layout="wide")
+st.set_page_config(page_title="Flarewatch", layout="wide")
 
-# Flarewatch title
-st.markdown("""
-    <h1 style='text-align: center; color: red;'>🚨 Flarewatch: Satellite Threat Detection System</h1>
-    <h4 style='text-align: center;'>Monitoring solar flares & satellites using space weather data</h4>
-""", unsafe_allow_html=True)
-
-st.divider()
-
-# 🔆 Animated Sun
-st.markdown("""
-    <div style='text-align: center;'>
-        <img src="https://upload.wikimedia.org/wikipedia/commons/2/28/Sun_rotate.gif" width="200"/>
+# Sun animation + title
+st.markdown(
+    """
+    <div style="text-align: center;">
+        <img src="https://media.giphy.com/media/5PhsM62X1Y4MVbmWHj/giphy.gif" width="400">
+        <h1 style="color: red;">Flarewatch</h1>
+        <p><b>Tracking solar flare risks for satellite safety</b></p>
     </div>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
 st.divider()
 
-# 🛰️ Earth Orbit 3D Viewer (NASA Eyes)
-st.markdown("## 🪐 Live Earth Orbit View (NASA Eyes 3D)")
-components.html("""
-    <iframe src="https://eyes.nasa.gov/apps/orrery/#/home" width="100%" height="600" frameborder="0" allowfullscreen></iframe>
-""", height=600)
+# Section title
+st.subheader("🛰️ Real-time Satellite Orbit Map")
 
-st.divider()
+# Orbiting Globe
+components.html(
+    """
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        html, body {
+          margin: 0;
+          height: 100%;
+          overflow: hidden;
+        }
+      </style>
+    </head>
+    <body>
+    <div id="globeViz"></div>
+    <script src="https://unpkg.com/three@0.121.1/build/three.min.js"></script>
+    <script src="https://unpkg.com/globe.gl"></script>
+    <script>
+      const world = Globe()
+        (document.getElementById('globeViz'))
+        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
+        .backgroundColor('#000000')
+        .showAtmosphere(true)
+        .atmosphereColor('lightskyblue')
+        .atmosphereAltitude(0.25)
+        .pointOfView({ lat: 20, lng: 80, altitude: 2.5 }, 0);
 
-# Danger Satellites List
-danger_satellites = ["GOES-16", "NOAA-21", "Sentinel-6"]
-st.markdown("### 🔴 Satellites in Danger:")
-for sat in danger_satellites:
-    st.markdown(f"<p style='color:red;'>🛰️ {sat}</p>", unsafe_allow_html=True)
+      world
+        .ringsData([
+          { lat: 10, lng: 80, maxR: 2, propagationSpeed: 1, repeatPeriod: 1000 },
+          { lat: 35, lng: -120, maxR: 2, propagationSpeed: 1, repeatPeriod: 1500 },
+          { lat: -10, lng: 60, maxR: 2, propagationSpeed: 1, repeatPeriod: 1300 }
+        ])
+        .ringColor(() => ['red', 'crimson', 'darkred']);
+    </script>
+    </body>
+    </html>
+    """,
+    height=600
+)
