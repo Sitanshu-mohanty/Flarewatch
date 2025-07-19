@@ -1,34 +1,44 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
+from PIL import Image
 
-# Title
-st.title("☀️ FlareWatch: Solar Flare Activity Dashboard")
-st.markdown("Visualizing recent solar flare activity and its intensity by region.")
+st.set_page_config(page_title="Flarewatch", page_icon="🌍", layout="wide")
 
-# Load data
-@st.cache_data
-def load_data():
-    return pd.read_csv("flare_data_sample.csv")
+st.markdown("<h1 style='text-align: center; color: #FF5733;'>🚨 Flarewatch: Satellite Threat Detection System</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>Real-time risk dashboard to monitor solar flares and satellite safety using space weather data.</p>", unsafe_allow_html=True)
+st.markdown("---")
 
-df = load_data()
+st.sidebar.title("📁 Data Options")
+data_source = st.sidebar.radio("Choose data source:", ["Upload CSV", "Use Sample Data"])
 
-# Show raw data
-if st.checkbox("Show raw data"):
-    st.write(df)
+if data_source == "Upload CSV":
+    uploaded_file = st.sidebar.file_uploader("Upload your space data CSV", type=["csv"])
+    if uploaded_file is not None:
+        df = pd.read_csv(uploaded_file)
+        st.success("✅ Your data has been loaded.")
+    else:
+        st.warning("⚠️ Upload a CSV file to proceed.")
+        st.stop()
+else:
+    df = pd.DataFrame({
+        "Timestamp": pd.date_range(start="2025-07-01", periods=24, freq="H"),
+        "Solar Flare Index": [0.3, 0.2, 0.5, 1.2, 1.8, 2.0, 1.7, 0.8, 0.5, 0.3, 0.2, 0.4,
+                              0.9, 1.1, 1.6, 2.4, 3.1, 2.7, 1.9, 1.0, 0.7, 0.4, 0.3, 0.1]
+    })
 
-# Flare class distribution
-flare_counts = df['flare_class'].value_counts().reset_index()
-flare_counts.columns = ['flare_class', 'count']
+st.subheader("🛰️ Satellite Risk Index Data")
+st.dataframe(df, use_container_width=True)
 
-fig1 = px.bar(flare_counts, x='flare_class', y='count',
-              title='Flare Class Distribution',
-              color='flare_class',
-              color_discrete_sequence=px.colors.qualitative.Vivid)
-st.plotly_chart(fig1)
+st.subheader("⚠️ Flare Activity Over Time")
+st.line_chart(df.set_index("Timestamp"))
 
-# Intensity over time
-df['event_date'] = pd.to_datetime(df['event_date'])
-fig2 = px.line(df, x='event_date', y='intensity', color='flare_class',
-               title='Solar Flare Intensity Over Time')
-st.plotly_chart(fig2)
+flare_threshold = 2.5
+max_flare = df["Solar Flare Index"].max()
+
+if max_flare >= flare_threshold:
+    st.error(f"🚨 HIGH RISK: Solar flare index peaked at {max_flare}!")
+else:
+    st.success(f"✅ SAFE: No severe flares detected (Max Index: {max_flare})")
+
+st.markdown("---")
+st.caption("🔬 Built by Sitanshu Sekhar Mohanty | Prototype version | NASA API Integration Coming Soon.")
