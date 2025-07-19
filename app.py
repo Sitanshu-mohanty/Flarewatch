@@ -2,28 +2,33 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-st.set_page_config(page_title="FlareWatch", layout="wide")
+# Title
+st.title("☀️ FlareWatch: Solar Flare Activity Dashboard")
+st.markdown("Visualizing recent solar flare activity and its intensity by region.")
 
-st.title("☀️ FlareWatch")
-st.subheader("Track Solar Flares. Assess Satellite Risk.")
+# Load data
+@st.cache_data
+def load_data():
+    return pd.read_csv("flare_data_sample.csv")
 
-# Load Data
-flare_data = pd.read_csv("data/flare_data.csv")
-sat_data = pd.read_csv("data/satellite_data.csv")
+df = load_data()
 
-# Map of flares
-st.markdown("### 🌍 Affected Earth Regions from Recent Flares")
-fig = px.scatter_geo(
-    flare_data,
-    lat="latitude",
-    lon="longitude",
-    color="intensity",
-    size="impact_radius",
-    projection="natural earth",
-    title="Solar Flare Impact Zones",
-)
-st.plotly_chart(fig, use_container_width=True)
+# Show raw data
+if st.checkbox("Show raw data"):
+    st.write(df)
 
-# Satellite Table
-st.markdown("### 🛰️ Satellites at Potential Risk")
-st.dataframe(sat_data)
+# Flare class distribution
+flare_counts = df['flare_class'].value_counts().reset_index()
+flare_counts.columns = ['flare_class', 'count']
+
+fig1 = px.bar(flare_counts, x='flare_class', y='count',
+              title='Flare Class Distribution',
+              color='flare_class',
+              color_discrete_sequence=px.colors.qualitative.Vivid)
+st.plotly_chart(fig1)
+
+# Intensity over time
+df['event_date'] = pd.to_datetime(df['event_date'])
+fig2 = px.line(df, x='event_date', y='intensity', color='flare_class',
+               title='Solar Flare Intensity Over Time')
+st.plotly_chart(fig2)
